@@ -1,6 +1,6 @@
 # Mocking
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/master/mocking)**
+**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/mocking)**
 
 You have been asked to write a program which counts down from 3, printing each number on a new line (with a 1 second pause) and when it reaches zero it will print "Go!" and exit.
 
@@ -609,6 +609,17 @@ It is sometimes hard to know _what level_ to test exactly but here are some thou
 - Use spies with caution. Spies let you see the insides of the algorithm you are writing which can be very useful but that means a tighter coupling between your test code and the implementation. **Be sure you actually care about these details if you're going to spy on them**
 
 As always, rules in software development aren't really rules and there can be exceptions. [Uncle Bob's article of "When to mock"](https://8thlight.com/blog/uncle-bob/2014/05/10/WhenToMock.html) has some excellent pointers.
+
+#### Can't I just use a mocking framework?
+
+Mocking requires no magic and is relatively simple; using a framework can make mocking seem more complicated than it is. We don't use automocking in this chapter so that we get:
+
+- a better understanding of how to mock
+- practise implementing interfaces
+
+In collaborative projects there is value auto-generating mocks. In a team, a mock generation tool codifies consistency around the test doubles. This will avoid inconsistently written test doubles which can translate to inconsistently written tests.
+
+You should only use a mock generator that generates test doubles against an interface. Any tool that overly dictates how tests are written, or that use lots of 'magic', can get in the sea.
 
 ## Wrapping up
 

@@ -1,6 +1,6 @@
 # Reflection
 
-**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/master/reflection)**
+**[You can find all the code for this chapter here](https://github.com/quii/learn-go-with-tests/tree/main/reflection)**
 
 [From Twitter](https://twitter.com/peterbourgon/status/1011403901419937792?s=09)
 
@@ -762,6 +762,7 @@ Here is how `assertContains` is defined
 
 ```go
 func assertContains(t *testing.T, haystack []string, needle string)  {
+    t.Helper()
     contains := false
     for _, x := range haystack {
         if x == needle {
@@ -815,33 +816,32 @@ We can iterate through all values sent through channel until it was closed with 
 
 ```go
 func walk(x interface{}, fn func(input string)) {
-    val := getValue(x)
+	val := getValue(x)
 
-    numberOfValues := 0
-    var getField func(int) reflect.Value
+	walkValue := func(value reflect.Value) {
+		walk(value.Interface(), fn)
+	}
 
-    switch val.Kind() {
-    case reflect.String:
-        fn(val.String())
-    case reflect.Struct:
-        numberOfValues = val.NumField()
-        getField = val.Field
-    case reflect.Slice, reflect.Array:
-        numberOfValues = val.Len()
-        getField = val.Index
-    case reflect.Map:
-        for _, key := range val.MapKeys() {
-            walk(val.MapIndex(key).Interface(), fn)
-        }
-    case reflect.Chan:
-		for v, ok := val.Recv(); ok; v, ok = val.Recv() {	
+	switch val.Kind() {
+	case reflect.String:
+		fn(val.String())
+	case reflect.Struct:
+		for i := 0; i < val.NumField(); i++ {
+			walkValue(val.Field(i))
+		}
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < val.Len(); i++ {
+			walkValue(val.Index(i))
+		}
+	case reflect.Map:
+		for _, key := range val.MapKeys() {
+			walkValue(val.MapIndex(key))
+		}
+	case reflect.Chan:
+		for v, ok := val.Recv(); ok; v, ok = val.Recv() {
 			walk(v.Interface(), fn)
 		}
-    }
-
-    for i:=0; i< numberOfValues; i++ {
-        walk(getField(i).Interface(), fn)
-    }
+	}
 }
 ```
 The next type we want to handle is `func`.
@@ -881,26 +881,29 @@ Non zero-argument functions do not seem to make a lot of sense in this scenario.
 
 ```go
 func walk(x interface{}, fn func(input string)) {
-    val := getValue(x)
+	val := getValue(x)
 
-    numberOfValues := 0
-    var getField func(int) reflect.Value
+	walkValue := func(value reflect.Value) {
+		walk(value.Interface(), fn)
+	}
 
-    switch val.Kind() {
-    case reflect.String:
-        fn(val.String())
-    case reflect.Struct:
-        numberOfValues = val.NumField()
-        getField = val.Field
-    case reflect.Slice, reflect.Array:
-        numberOfValues = val.Len()
-        getField = val.Index
-    case reflect.Map:
-        for _, key := range val.MapKeys() {
-            walk(val.MapIndex(key).Interface(), fn)
-        }
-    case reflect.Chan:
-		for v, ok := val.Recv(); ok; v, ok = val.Recv() {	
+	switch val.Kind() {
+	case reflect.String:
+		fn(val.String())
+	case reflect.Struct:
+		for i := 0; i < val.NumField(); i++ {
+			walkValue(val.Field(i))
+		}
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < val.Len(); i++ {
+			walkValue(val.Index(i))
+		}
+	case reflect.Map:
+		for _, key := range val.MapKeys() {
+			walkValue(val.MapIndex(key))
+		}
+	case reflect.Chan:
+		for v, ok := val.Recv(); ok; v, ok = val.Recv() {
 			walk(v.Interface(), fn)
 		}
 	case reflect.Func:
@@ -908,11 +911,7 @@ func walk(x interface{}, fn func(input string)) {
 		for _, res := range valFnResult {
 			walk(res.Interface(), fn)
 		}
-    }
-
-    for i:=0; i< numberOfValues; i++ {
-        walk(getField(i).Interface(), fn)
-    }
+	}
 }
 ```
 
